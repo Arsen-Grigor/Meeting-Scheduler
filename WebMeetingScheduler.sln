@@ -1,0 +1,51 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{96925D68-C9D4-4D2F-A310-1F591A555CA4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebMeetingScheduler.Domain", "WebMeetingScheduler.Domain\WebMeetingScheduler.Domain.csproj", "{C9F9178F-2E68-48F3-B00A-3D7FE86F35B7}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebMeetingScheduler.Application", "WebMeetingScheduler.Application\WebMeetingScheduler.Application.csproj", "{E7A2710B-C024-4C32-BA4C-ED3B0ACA1326}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebMeetingScheduler.Infrastructure", "WebMeetingScheduler.Infrastructure\WebMeetingScheduler.Infrastructure.csproj", "{32548257-AEC5-4F14-A0EC-37602E0C7C51}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebMeetingScheduler.Web", "WebMeetingScheduler.Web\WebMeetingScheduler.Web.csproj", "{F59B98E7-B8EF-4069-B84C-62765A19D737}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{92031BD1-EBCB-458B-B130-20EA35610A35}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebMeetingScheduler.Tests", "WebMeetingScheduler.Tests\WebMeetingScheduler.Tests.csproj", "{46A550D5-7B71-42B0-A5E9-9488FAC54375}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{C9F9178F-2E68-48F3-B00A-3D7FE86F35B7} = {96925D68-C9D4-4D2F-A310-1F591A555CA4}
+		{E7A2710B-C024-4C32-BA4C-ED3B0ACA1326} = {96925D68-C9D4-4D2F-A310-1F591A555CA4}
+		{32548257-AEC5-4F14-A0EC-37602E0C7C51} = {96925D68-C9D4-4D2F-A310-1F591A555CA4}
+		{F59B98E7-B8EF-4069-B84C-62765A19D737} = {96925D68-C9D4-4D2F-A310-1F591A555CA4}
+		{46A550D5-7B71-42B0-A5E9-9488FAC54375} = {92031BD1-EBCB-458B-B130-20EA35610A35}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C9F9178F-2E68-48F3-B00A-3D7FE86F35B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C9F9178F-2E68-48F3-B00A-3D7FE86F35B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C9F9178F-2E68-48F3-B00A-3D7FE86F35B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C9F9178F-2E68-48F3-B00A-3D7FE86F35B7}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7A2710B-C024-4C32-BA4C-ED3B0ACA1326}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7A2710B-C024-4C32-BA4C-ED3B0ACA1326}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7A2710B-C024-4C32-BA4C-ED3B0ACA1326}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7A2710B-C024-4C32-BA4C-ED3B0ACA1326}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32548257-AEC5-4F14-A0EC-37602E0C7C51}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32548257-AEC5-4F14-A0EC-37602E0C7C51}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32548257-AEC5-4F14-A0EC-37602E0C7C51}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32548257-AEC5-4F14-A0EC-37602E0C7C51}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F59B98E7-B8EF-4069-B84C-62765A19D737}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F59B98E7-B8EF-4069-B84C-62765A19D737}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F59B98E7-B8EF-4069-B84C-62765A19D737}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F59B98E7-B8EF-4069-B84C-62765A19D737}.Release|Any CPU.Build.0 = Release|Any CPU
+		{46A550D5-7B71-42B0-A5E9-9488FAC54375}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{46A550D5-7B71-42B0-A5E9-9488FAC54375}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{46A550D5-7B71-42B0-A5E9-9488FAC54375}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{46A550D5-7B71-42B0-A5E9-9488FAC54375}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
