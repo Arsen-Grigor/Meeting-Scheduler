@@ -6,5 +6,6 @@ public sealed record CreateMeetingCommand(
     string Title,
     string Description,
     int Duration,
-    DateTime earliestStart,
-    DateTime latestEnd) : IRequest<Guid>;
+    DateTime EarliestStart,
+    DateTime LatestEnd,
+    List<Guid> ParticipantId) : IRequest<Guid>;

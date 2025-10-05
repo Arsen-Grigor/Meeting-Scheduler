@@ -33,8 +33,6 @@ public class MeetingsRepository : IMeetingsRepository
             var latestEnd = tryLatestEnd;
             var durationMinutes = duration;
             
-            try
-            {
                 var suggestedStartTime = _meetingScheduler.TryScheduleMeeting(
                     allMeetings ?? new List<Meeting>(),
                     participantIds,
@@ -48,11 +46,6 @@ public class MeetingsRepository : IMeetingsRepository
                         suggestedStartTime.Value, 
                         suggestedStartTime.Value.AddMinutes(durationMinutes));
                 }
-            }
-            catch (NoAvailableTimeSlotException)
-            {
-                // logged, ignore throw
-            }
         }
         
         await _dbContext.SaveChangesAsync(cancellationToken);

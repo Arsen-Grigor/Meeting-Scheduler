@@ -6,7 +6,13 @@ using WebMeetingScheduler.Application.Meetings.Queries;
 
 namespace WebMeetingScheduler.Web.Controllers;
 
-public record CreateMeetingRequest(string Title, string Description, int Duration, DateTime Start, DateTime End);
+public record CreateMeetingRequest(
+    string Title,
+    string Description,
+    int Duration,
+    DateTime Start,
+    DateTime End,
+    List<Guid> Participants);
 public record UpdateMeetingRequest(string? Title, string? Description);
 
 #if !DEBUG
@@ -56,7 +62,8 @@ public class MeetingsController : ApiControllerBase
                 request.Description,
                 request.Duration,
                 request.Start,
-                request.End);
+                request.End,
+                request.Participants);
             var meetingId = await Mediator.Send(command);
         
             _logger.LogInformation("Meeting created successfully: {MeetingId}", meetingId);

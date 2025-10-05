@@ -78,7 +78,8 @@ POST `https://localhost:5001/api/Meetings`
   "description": "Review last sprint",
   "duration": 60,
   "start": "2025-10-02T09:30:00Z",
-  "end": "2025-10-02T15:00:00Z"
+  "end": "2025-10-02T15:00:00Z",
+  "participants": "518d8539-1ba4-4e98-8702-239b2ed3f86c"
 }
 ```
 **Update Participant**

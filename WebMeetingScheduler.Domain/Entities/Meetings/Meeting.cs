@@ -47,18 +47,26 @@ public class Meeting : Entity
     public static Meeting Create(
         Guid id,
         string title,
-        string description)
+        string description,
+        List<Guid> participantsId)
     {
-        return new Meeting(id, title, description);
+        var participants = new List<ParticipantId>();
+        foreach (var p in participantsId)
+        {
+            participants.Add(new ParticipantId(p));
+        }
+        
+        return new Meeting(id, title, description, participants);
     }
     
     private Meeting() { }
     
-    private Meeting(MeetingId id, MeetingTitle title, MeetingDescription description)
+    private Meeting(MeetingId id, MeetingTitle title, MeetingDescription description, List<ParticipantId> participantsId)
     {
         Id = id;
         Title = title;
         Description = description;
+        _participantsId = participantsId;
         
         AddDomainEvent(new MeetingCreatedEvent(id.Value));
     }

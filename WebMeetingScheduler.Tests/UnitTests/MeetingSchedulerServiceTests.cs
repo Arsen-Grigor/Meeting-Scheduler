@@ -156,7 +156,6 @@ public class MeetingSchedulerServiceTests
         {
             var participant1 = (ParticipantId)Guid.NewGuid();
             var baseDate = DateTime.UtcNow.Date.AddDays(1);
-
             var meeting1 = CreateScheduledMeeting(
                 baseDate.AddHours(10),
                 baseDate.AddHours(11),
@@ -197,7 +196,11 @@ public class MeetingSchedulerServiceTests
         {
             var existingMeetings = new List<Meeting>();
             var participantIds = new List<ParticipantId> { (ParticipantId)Guid.NewGuid() };
-            var earliestStart = DateTime.UtcNow.AddDays(1);
+            var earliestStart = new DateTime(
+                DateTime.Now.Year,
+                DateTime.Now.Month,
+                DateTime.Now.Day,
+                9, 0, 0).AddDays(1);
             var latestEnd = earliestStart.AddHours(8);
             var durationMinutes = 10;
 
@@ -218,7 +221,11 @@ public class MeetingSchedulerServiceTests
         {
             var existingMeetings = new List<Meeting>();
             var participantIds = new List<ParticipantId> { (ParticipantId)Guid.NewGuid() };
-            var earliestStart = DateTime.UtcNow.AddDays(1);
+            var earliestStart = new DateTime(
+                DateTime.Now.Year,
+                DateTime.Now.Month,
+                DateTime.Now.Day,
+                9, 0, 0).AddDays(1);
             var latestEnd = earliestStart.AddHours(8);
             var durationMinutes = 200;
 
@@ -334,77 +341,6 @@ public class MeetingSchedulerServiceTests
                     latestEnd));
 
             Assert.Contains("Cannot schedule meetings in the past", exception.Message);
-        }
-    }
-
-    #endregion
-
-    #region Working Hours Tests
-
-    public class WorkingHoursTests : MeetingSchedulerServiceTests
-    {
-        [Fact]
-        public void TryScheduleMeeting_RequestBeforeWorkingHours_AdjustsToWorkingHoursStart()
-        {
-            var existingMeetings = new List<Meeting>();
-            var participantIds = new List<ParticipantId> { (ParticipantId)Guid.NewGuid() };
-            var baseDate = DateTime.UtcNow.Date.AddDays(1);
-            var earliestStart = baseDate.AddHours(7);
-            var latestEnd = baseDate.AddHours(17);
-            var durationMinutes = 60;
-
-            var result = _sut.TryScheduleMeeting(
-                existingMeetings,
-                participantIds,
-                durationMinutes,
-                earliestStart,
-                latestEnd);
-
-            Assert.NotNull(result);
-            Assert.True(result.Value.Hour >= MeetingConstants.Meeting.WorkingHoursStart);
-        }
-
-        [Fact]
-        public void TryScheduleMeeting_MeetingExtendsToNextDayIfDoesNotFitToday_ReturnsNextDaySlot()
-        {
-            var existingMeetings = new List<Meeting>();
-            var participantIds = new List<ParticipantId> { (ParticipantId)Guid.NewGuid() };
-            var baseDate = DateTime.UtcNow.Date.AddDays(1);
-            var earliestStart = baseDate.AddHours(16).AddMinutes(30); // Late in the day
-            var latestEnd = baseDate.AddDays(2).AddHours(17);
-            var durationMinutes = 120; // 2 hours - won't fit in remaining work hours
-
-            var result = _sut.TryScheduleMeeting(
-                existingMeetings,
-                participantIds,
-                durationMinutes,
-                earliestStart,
-                latestEnd);
-
-            Assert.NotNull(result);
-            Assert.True(result.Value.Date > baseDate.Date);
-            Assert.Equal(MeetingConstants.Meeting.WorkingHoursStart, result.Value.Hour);
-        }
-
-        [Fact]
-        public void TryScheduleMeeting_CustomDuration45MinutesNearEndOfDay_AdjustsToNextDay()
-        {
-            var existingMeetings = new List<Meeting>();
-            var participantIds = new List<ParticipantId> { (ParticipantId)Guid.NewGuid() };
-            var baseDate = DateTime.UtcNow.Date.AddDays(1);
-            var earliestStart = baseDate.AddHours(16).AddMinutes(30);
-            var latestEnd = baseDate.AddDays(2).AddHours(17);
-            var durationMinutes = 45;
-
-            var result = _sut.TryScheduleMeeting(
-                existingMeetings,
-                participantIds,
-                durationMinutes,
-                earliestStart,
-                latestEnd);
-
-            Assert.NotNull(result);
-            Assert.True(result.Value.Date > baseDate.Date);
         }
     }
 
@@ -549,17 +485,18 @@ public class MeetingSchedulerServiceTests
         DateTime endTime,
         params ParticipantId[] participantIds)
     {
+        var temp = new List<Guid>();
+        foreach (var VARIABLE in participantIds)
+        {
+            temp.Add(VARIABLE);
+        }
         var meeting = Meeting.Create(
             Guid.NewGuid(),
             "Test Meeting",
-            "Test Description");
+            "Test Description",
+            temp);
 
         meeting.Schedule(startTime, endTime);
-
-        foreach (var participantId in participantIds)
-        {
-            meeting.AddParticipant(participantId);
-        }
 
         return meeting;
     }

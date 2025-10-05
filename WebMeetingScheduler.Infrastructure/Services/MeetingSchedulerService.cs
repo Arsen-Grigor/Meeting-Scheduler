@@ -15,7 +15,10 @@ public class MeetingSchedulerService : IMeetingScheduler
         DateTime latestEnd)
     {
         ValidateSchedulingParameters(durationMinutes, earliestStart, latestEnd);
-        var conflictingMeetings = GetConflictingMeetings(existingMeetings, participantIds);
+        var conflictingMeetings = GetConflictingMeetings(
+            existingMeetings,
+            earliestStart,
+            participantIds);
         var startTime = FindAvailableSlot(
             conflictingMeetings,
             durationMinutes,
@@ -90,11 +93,13 @@ public class MeetingSchedulerService : IMeetingScheduler
 
     private List<Meeting> GetConflictingMeetings(
         List<Meeting> allMeetings,
+        DateTime earliestStart,
         List<ParticipantId> participantIds)
     {
         return allMeetings
-            .Where(m => m.StartTime != default && m.EndTime != default) // Only scheduled meetings
-            .Where(m => m.ParticipantsId.Any(p => participantIds.Contains(p))) // Common participants
+            .Where(m => m.StartTime != default && m.EndTime != default)
+            .Where(m => m.StartTime.Value.Date == earliestStart.Date)
+            .Where(m => m.ParticipantsId.Any(p => participantIds.Contains(p)))
             .OrderBy(m => m.StartTime)
             .ToList();
     }
@@ -108,9 +113,17 @@ public class MeetingSchedulerService : IMeetingScheduler
     {
         if (!conflictingMeetings.Any())
         {
-            return AdjustToWorkingHours(earliestStart, durationMinutes, latestEnd);
+            if (IsWithinWorkingHours(earliestStart, durationMinutes))
+                return earliestStart;
+            
+            var workStart = earliestStart.Date.AddHours(MeetingConstants.Meeting.WorkingHoursStart);
+            if (IsWithinWorkingHours(workStart, durationMinutes) && 
+                workStart.AddMinutes(durationMinutes) <= latestEnd)
+                return workStart;
+            
+            return null;
         }
-
+        
         var beforeFirst = TryScheduleBeforeFirstMeeting(
             conflictingMeetings,
             durationMinutes,
@@ -133,6 +146,7 @@ public class MeetingSchedulerService : IMeetingScheduler
         var afterLast = TryScheduleAfterLastMeeting(
             conflictingMeetings,
             durationMinutes,
+            earliestStart,
             latestEnd,
             overlapMinutes);
 
@@ -152,47 +166,148 @@ public class MeetingSchedulerService : IMeetingScheduler
             return earliestStart;
 
         var firstMeeting = conflictingMeetings.First();
+        if (!firstMeeting.StartTime.HasValue)
+            return null;
+        
         var availableMinutes = (firstMeeting.StartTime - earliestStart)?.TotalMinutes + overlapMinutes;
-
         if (availableMinutes >= durationMinutes)
         {
-            return AdjustToWorkingHours(earliestStart, durationMinutes, firstMeeting.StartTime);
+            return earliestStart;
         }
-
+        
         return null;
     }
 
-    private DateTime? TryScheduleBetweenMeetings(
-        List<Meeting> conflictingMeetings,
-        int durationMinutes,
-        DateTime earliestStart,
-        DateTime latestEnd,
-        int overlapMinutes)
+private DateTime? TryScheduleBetweenMeetings(
+    List<Meeting> conflictingMeetings,
+    int durationMinutes,
+    DateTime earliestStart,
+    DateTime latestEnd,
+    int overlapMinutes)
+{
+    for (int i = 0; i < conflictingMeetings.Count - 1; i++)
     {
-        for (int i = 0; i < conflictingMeetings.Count - 1; i++)
+        var currentMeeting = conflictingMeetings[i];
+        var nextMeeting = conflictingMeetings[i + 1];
+        
+        if (!currentMeeting.EndTime.HasValue || !nextMeeting.StartTime.HasValue)
+            continue;
+
+        var slot = TrySlotWithNoOverlap(
+            currentMeeting.EndTime.Value,
+            nextMeeting.StartTime.Value,
+            durationMinutes,
+            earliestStart,
+            latestEnd);
+        
+        if (slot.HasValue)
+            return slot;
+
+        if (overlapMinutes > 0)
         {
-            var currentMeeting = conflictingMeetings[i];
-            var nextMeeting = conflictingMeetings[i + 1];
-
-            var potentialStart = currentMeeting.EndTime?.AddMinutes(-overlapMinutes);
-            var potentialEnd = potentialStart?.AddMinutes(durationMinutes);
-
-            var gapMinutes = (nextMeeting.StartTime - potentialStart)?.TotalMinutes + overlapMinutes;
-
-            if (gapMinutes >= durationMinutes &&
-                potentialStart >= earliestStart &&
-                potentialEnd <= latestEnd)
-            {
-                return AdjustToWorkingHours(potentialStart, durationMinutes, nextMeeting.StartTime);
-            }
+            slot = TrySlotWithPreviousOverlap(
+                currentMeeting.EndTime.Value,
+                nextMeeting.StartTime.Value,
+                durationMinutes,
+                earliestStart,
+                latestEnd,
+                overlapMinutes);
+            
+            if (slot.HasValue)
+                return slot;
         }
 
-        return null;
+        if (overlapMinutes > 0)
+        {
+            slot = TrySlotWithNextOverlap(
+                currentMeeting.EndTime.Value,
+                nextMeeting.StartTime.Value,
+                durationMinutes,
+                earliestStart,
+                latestEnd,
+                overlapMinutes);
+            
+            if (slot.HasValue)
+                return slot;
+        }
     }
+
+    return null;
+}
+
+private DateTime? TrySlotWithNoOverlap(
+    DateTime previousEnd,
+    DateTime nextStart,
+    int durationMinutes,
+    DateTime earliestStart,
+    DateTime latestEnd)
+{
+    var potentialStart = previousEnd;
+    
+    if (potentialStart < earliestStart)
+        potentialStart = earliestStart;
+    
+    var potentialEnd = potentialStart.AddMinutes(durationMinutes);
+    
+    if (potentialStart >= previousEnd && 
+        potentialEnd <= nextStart && 
+        potentialEnd <= latestEnd)
+    {
+        return potentialStart;
+    }
+    
+    return null;
+}
+
+private DateTime? TrySlotWithPreviousOverlap(
+    DateTime previousEnd,
+    DateTime nextStart,
+    int durationMinutes,
+    DateTime earliestStart,
+    DateTime latestEnd,
+    int overlapMinutes)
+{
+    var potentialStart = previousEnd.AddMinutes(-overlapMinutes);
+    
+    if (potentialStart < earliestStart)
+        potentialStart = earliestStart;
+    
+    var potentialEnd = potentialStart.AddMinutes(durationMinutes);
+    
+    if (potentialEnd <= nextStart && potentialEnd <= latestEnd)
+    {
+        return potentialStart;
+    }
+    
+    return null;
+}
+
+private DateTime? TrySlotWithNextOverlap(
+    DateTime previousEnd,
+    DateTime nextStart,
+    int durationMinutes,
+    DateTime earliestStart,
+    DateTime latestEnd,
+    int overlapMinutes)
+{
+    var potentialEnd = nextStart.AddMinutes(overlapMinutes);
+    var potentialStart = potentialEnd.AddMinutes(-durationMinutes);
+    
+    if (potentialStart < earliestStart)
+        return null;
+    
+    if (potentialStart >= previousEnd && potentialEnd <= latestEnd)
+    {
+        return potentialStart;
+    }
+    
+    return null;
+}
 
     private DateTime? TryScheduleAfterLastMeeting(
         List<Meeting> conflictingMeetings,
         int durationMinutes,
+        DateTime earliestStart,
         DateTime latestEnd,
         int overlapMinutes)
     {
@@ -200,43 +315,20 @@ public class MeetingSchedulerService : IMeetingScheduler
             return null;
 
         var lastMeeting = conflictingMeetings.Last();
-        var potentialStart = lastMeeting.EndTime?.AddMinutes(-overlapMinutes);
-        var potentialEnd = potentialStart?.AddMinutes(durationMinutes);
+        if (!lastMeeting.EndTime.HasValue)
+            return null;
 
+        var potentialStart = lastMeeting.EndTime.Value.AddMinutes(-overlapMinutes);
+        if (potentialStart < earliestStart)
+            potentialStart = earliestStart;
+        
+        var potentialEnd = potentialStart.AddMinutes(durationMinutes);
         if (potentialEnd <= latestEnd)
         {
-            return AdjustToWorkingHours(potentialStart, durationMinutes, latestEnd);
+            return potentialStart;
         }
 
         return null;
-    }
-
-    private DateTime? AdjustToWorkingHours(
-        DateTime? proposedStart,
-        int durationMinutes,
-        DateTime? latestAllowed)
-    {
-        var adjusted = proposedStart;
-
-        var workStart = adjusted?.Date.AddHours(MeetingConstants.Meeting.WorkingHoursStart);
-        if (adjusted < workStart)
-        {
-            adjusted = workStart;
-        }
-
-        var workEnd = adjusted?.Date.AddHours(MeetingConstants.Meeting.WorkingHoursEnd);
-        var meetingEnd = adjusted?.AddMinutes(durationMinutes);
-
-        if (meetingEnd > workEnd)
-        {
-            adjusted = adjusted?.Date.AddDays(1).AddHours(MeetingConstants.Meeting.WorkingHoursStart);
-            meetingEnd = adjusted?.AddMinutes(durationMinutes);
-        }
-
-        if (meetingEnd > latestAllowed)
-            return null;
-
-        return adjusted;
     }
 
     private bool IsWithinWorkingHours(DateTime startTime, int durationMinutes)
@@ -301,17 +393,27 @@ public class MeetingSchedulerService : IMeetingScheduler
             return (int)(latestEnd - earliestStart).TotalMinutes;
 
         var gaps = new List<int>();
-
-        gaps.Add((int)(conflictingMeetings.First().StartTime - earliestStart)?.TotalMinutes);
+        if (conflictingMeetings.First().StartTime.HasValue)
+        {
+            gaps.Add((int)(conflictingMeetings.First().StartTime.Value - earliestStart).TotalMinutes);
+        }
 
         for (int i = 0; i < conflictingMeetings.Count - 1; i++)
         {
-            var gap = (int)(conflictingMeetings[i + 1].StartTime - conflictingMeetings[i].EndTime)?.TotalMinutes;
-            gaps.Add(gap);
+            if (conflictingMeetings[i].EndTime.HasValue && 
+                conflictingMeetings[i + 1].StartTime.HasValue)
+            {
+                var gap = (int)(conflictingMeetings[i + 1].StartTime.Value - 
+                                conflictingMeetings[i].EndTime.Value).TotalMinutes;
+                gaps.Add(gap);
+            }
         }
 
-        gaps.Add((int)(latestEnd - conflictingMeetings.Last().EndTime)?.TotalMinutes);
-
+        if (conflictingMeetings.Last().EndTime.HasValue)
+        {
+            gaps.Add((int)(latestEnd - conflictingMeetings.Last().EndTime.Value).TotalMinutes);
+        }
+        
         return gaps.Max();
     }
 }

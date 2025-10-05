@@ -58,17 +58,20 @@ public static class AppDbContextSeed
             Meeting.Create(
                 meeting1Id,
                 "Q4 Strategy Planning",
-                "Quarterly strategy planning session to discuss goals and objectives for Q4."),
+                "Quarterly strategy planning session to discuss goals and objectives for Q4.",
+                new List<Guid>{participant1Id, participant2Id}),
             
             Meeting.Create(
                 meeting2Id,
                 "Architecture Review",
-                "Technical architecture review for the new microservices migration project."),
+                "Technical architecture review for the new microservices migration project.",
+                new List<Guid>{participant3Id, participant4Id}),
             
             Meeting.Create(
                 meeting3Id,
                 "Sprint Planning",
-                "Sprint planning meeting for the upcoming two-week sprint cycle.")
+                "Sprint planning meeting for the upcoming two-week sprint cycle.",
+                new List<Guid>{participant5Id, participant4Id})
         };
 
         var now = DateTime.UtcNow;
