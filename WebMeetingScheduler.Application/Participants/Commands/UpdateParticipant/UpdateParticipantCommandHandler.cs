@@ -20,5 +20,6 @@ public sealed class UpdateParticipantCommandHandler : IRequestHandler<UpdatePart
             request.Role,
             request.Email,
             cancellationToken);
+        await _participantsRepository.SaveChangesToDbContextAsync(cancellationToken);
     }
 }

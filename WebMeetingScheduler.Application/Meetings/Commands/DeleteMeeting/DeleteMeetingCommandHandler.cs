@@ -15,5 +15,6 @@ public sealed class DeleteMeetingCommandHandler : IRequestHandler<DeleteMeetingC
     public async Task Handle(DeleteMeetingCommand request, CancellationToken cancellationToken)
     {
         await _meetingsRepository.DeleteMeetingAsync(request.MeetingId, cancellationToken);
+        await _meetingsRepository.SaveChangesToDbContextAsync(cancellationToken);
     }
 }

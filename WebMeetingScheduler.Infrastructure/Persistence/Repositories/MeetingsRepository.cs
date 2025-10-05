@@ -17,6 +17,11 @@ public class MeetingsRepository : IMeetingsRepository
         _meetingScheduler = meetingScheduler;
     }
     
+    public async Task SaveChangesToDbContextAsync(CancellationToken cancellationToken = default)
+    {
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
+    
     public async Task CreateMeetingAsync(
         Meeting meeting,
         int duration,
@@ -47,8 +52,6 @@ public class MeetingsRepository : IMeetingsRepository
                         suggestedStartTime.Value.AddMinutes(durationMinutes));
                 }
         }
-        
-        await _dbContext.SaveChangesAsync(cancellationToken);
     }
     
     public async Task UpdateMeetingAsync(
@@ -64,8 +67,6 @@ public class MeetingsRepository : IMeetingsRepository
             throw new MeetingNotFoundException(meetingId.Value);
 
         meeting.UpdateTextData(title: newTitle, description: newDescription);
-        
-        await _dbContext.SaveChangesAsync(cancellationToken);
     }
     
     public async Task DeleteMeetingAsync(MeetingId meetingId, CancellationToken cancellationToken = default)
@@ -77,8 +78,6 @@ public class MeetingsRepository : IMeetingsRepository
             throw new MeetingNotFoundException(meetingId.Value);
 
         _dbContext.Meetings.Remove(meeting);
-        
-        await _dbContext.SaveChangesAsync(cancellationToken);
     }
     
     public async Task AddParticipantToMeetingAsync(
@@ -93,7 +92,6 @@ public class MeetingsRepository : IMeetingsRepository
             throw new MeetingNotFoundException(meetingId.Value);
 
         meeting.AddParticipant(participantId);
-        await _dbContext.SaveChangesAsync(cancellationToken);
     }
     
     public async Task RemoveParticipantFromMeetingAsync(
@@ -108,7 +106,6 @@ public class MeetingsRepository : IMeetingsRepository
             throw new MeetingNotFoundException(meetingId.Value);
 
         meeting.RemoveParticipant(participantId);
-        await _dbContext.SaveChangesAsync(cancellationToken);
     }
     
     public async Task<Meeting?> GetMeetingAsync(

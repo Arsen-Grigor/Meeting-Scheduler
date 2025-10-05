@@ -22,7 +22,7 @@ public sealed class CreateParticipantCommandHandler : IRequestHandler<CreatePart
             request.Role,
             request.Email);
         await _participantsRepository.CreateParticipantAsync(participant, cancellationToken);
-        
+        await _participantsRepository.SaveChangesToDbContextAsync(cancellationToken);
         return participantId;
     }
 }

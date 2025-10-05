@@ -18,5 +18,8 @@ public sealed class AddParticipantCommandHandler(
             request.ParticipantId,
             request.MeetingId,
             cancellationToken);
+        
+        await meetingsRepository.SaveChangesToDbContextAsync(cancellationToken);
+        await participantsRepository.SaveChangesToDbContextAsync(cancellationToken);
     }
 }

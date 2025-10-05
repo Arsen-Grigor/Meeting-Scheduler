@@ -27,5 +27,7 @@ public sealed class AddMeetingCommandHandler : IRequestHandler<AddMeetingCommand
             request.ParticipantId,
             request.MeetingId,
             cancellationToken);
+        await _meetingsRepository.SaveChangesToDbContextAsync(cancellationToken);
+        await _participantsRepository.SaveChangesToDbContextAsync(cancellationToken);
     }
 }

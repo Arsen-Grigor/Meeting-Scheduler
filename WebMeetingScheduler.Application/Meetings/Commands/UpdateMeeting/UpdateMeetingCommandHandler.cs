@@ -19,5 +19,6 @@ public sealed class UpdateMeetingCommandHandler : IRequestHandler<UpdateMeetingC
             request.Title,
             request.Description,
             cancellationToken);
+        await _meetingsRepository.SaveChangesToDbContextAsync(cancellationToken);
     }
 }

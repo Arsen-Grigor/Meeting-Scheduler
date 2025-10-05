@@ -8,4 +8,4 @@ public sealed record CreateMeetingCommand(
     int Duration,
     DateTime EarliestStart,
     DateTime LatestEnd,
-    List<Guid> ParticipantId) : IRequest<Guid>;
+    List<Guid> ParticipantsId) : IRequest<Guid>;

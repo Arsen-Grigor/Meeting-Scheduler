@@ -15,13 +15,17 @@ public class ParticipantsRepository : IParticipantsRepository
     {
         _dbContext = dbContext;
     }
+
+    public async Task SaveChangesToDbContextAsync(CancellationToken cancellationToken = default)
+    {
+        await _dbContext.SaveChangesAsync(cancellationToken);
+    }
     
     public async Task CreateParticipantAsync(
         Participant participant, 
         CancellationToken cancellationToken = default)
     {
         await _dbContext.AddAsync(participant, cancellationToken);
-        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task AddMeetingAsync(
@@ -36,7 +40,6 @@ public class ParticipantsRepository : IParticipantsRepository
             throw new ParticipantNotFoundException(participantId.Value);
 
         participant.AddMeeting(meetingId);
-        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task RemoveMeetingAsync(
@@ -51,7 +54,6 @@ public class ParticipantsRepository : IParticipantsRepository
             throw new ParticipantNotFoundException(participantId.Value);
 
         participant.RemoveMeeting(meetingId);
-        await _dbContext.SaveChangesAsync(cancellationToken);
     }
 
     public async Task UpdateParticipantAsync(
@@ -68,7 +70,6 @@ public class ParticipantsRepository : IParticipantsRepository
             throw new ParticipantNotFoundException(participantId.Value);
         
         participant.UpdateData(fullName, role, email);
-        await _dbContext.SaveChangesAsync(cancellationToken);
     }
     
     public async Task DeleteParticipantAsync(
@@ -82,7 +83,6 @@ public class ParticipantsRepository : IParticipantsRepository
             throw new ParticipantNotFoundException(participantId.Value);
 
         _dbContext.Participants.Remove(participant);
-        await _dbContext.SaveChangesAsync(cancellationToken);
     }
     
     public async Task<Participant?> GetParticipantByIdAsync(

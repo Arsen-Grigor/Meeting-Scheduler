@@ -5,6 +5,7 @@ namespace WebMeetingScheduler.Domain.Interfaces;
 
 public interface IMeetingsRepository
 {
+    Task SaveChangesToDbContextAsync(CancellationToken cancellationToken = default);
     Task CreateMeetingAsync(
         Meeting meeting,
         int durationMinutes,

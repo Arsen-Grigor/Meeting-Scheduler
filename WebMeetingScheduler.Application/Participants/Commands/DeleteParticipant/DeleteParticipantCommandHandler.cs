@@ -15,5 +15,6 @@ public sealed class DeleteParticipantCommandHandler : IRequestHandler<DeletePart
     public async Task Handle(DeleteParticipantCommand request, CancellationToken cancellationToken)
     {
         await _participantsRepository.DeleteParticipantAsync(request.ParticipantId, cancellationToken);
+        await _participantsRepository.SaveChangesToDbContextAsync(cancellationToken);
     }
 }

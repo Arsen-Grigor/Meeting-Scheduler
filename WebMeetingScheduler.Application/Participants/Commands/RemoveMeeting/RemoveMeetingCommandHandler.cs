@@ -18,5 +18,7 @@ public sealed class RemoveMeetingCommandHandler(
             request.ParticipantId,
             request.MeetingId,
             cancellationToken);
+        await meetingsRepository.SaveChangesToDbContextAsync(cancellationToken);
+        await participantsRepository.SaveChangesToDbContextAsync(cancellationToken);
     }
 }
